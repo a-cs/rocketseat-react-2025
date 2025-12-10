@@ -15,7 +15,16 @@ export default function useTask(){
 		])
 	}
 
+	function updateTask(id: string, payload:{title: Task["title"]}){
+		setTasks(
+			tasks.map((task)=> task.id === id ? {
+				...task, state: TaskState.Created, ...payload
+			} : task)
+		)
+	}
+
 	return {
-		prepareTask
+		prepareTask,
+		updateTask
 	}
 }

@@ -11,6 +11,7 @@ export default function useTask(){
 				id: Math.random().toString(36).substring(2,9),
 				title: "",
 				state: TaskState.Creating,
+				concluded: false
 			}
 		])
 	}
@@ -23,8 +24,15 @@ export default function useTask(){
 		)
 	}
 
+	function updateTaskStatus(id: string, concluded: boolean){
+		setTasks(
+			tasks.map((task)=> task.id === id ? {...task, concluded} : task)
+		)
+	}
+
 	return {
 		prepareTask,
-		updateTask
+		updateTask,
+		updateTaskStatus,
 	}
 }

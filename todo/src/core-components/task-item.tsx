@@ -23,13 +23,16 @@ export default function TaskItem({ task }: TaskItemProps) {
 
 	const [taskTitle, setTaskTitle] = useState(task.title || "")
 
-	const { updateTask, updateTaskStatus } = useTask()
+	const { updateTask, updateTaskStatus, deleteTask } = useTask()
 
 	function handleEditTask() {
 		setIsEditing(true)
 	}
 
 	function handleExitTask() {
+		if(task.state === TaskState.Creating){
+			deleteTask(task.id)
+		}
 		setIsEditing(false)
 	}
 
@@ -45,10 +48,12 @@ export default function TaskItem({ task }: TaskItemProps) {
 	}
 
 	function handleChangeTaskStatus(e:ChangeEvent<HTMLInputElement>){
-		// e.preventDefault()
 		const checked = e.target.checked
-
 		updateTaskStatus(task.id, checked)
+	}
+
+	function handleDeleteTask(){
+		deleteTask(task.id)
 	}
 
 	return (
@@ -63,7 +68,7 @@ export default function TaskItem({ task }: TaskItemProps) {
 						"line-through": task.concluded
 					})}>{task?.title}</Text>
 					<div className="flex gap-1">
-						<ButtonIcon type="button" icon={TrashIcon} variant="tertiary" />
+						<ButtonIcon type="button" icon={TrashIcon} variant="tertiary" onClick={handleDeleteTask}/>
 						<ButtonIcon type="button" icon={PencilIcon} variant="tertiary" onClick={handleEditTask} />
 					</div>
 				</ div>

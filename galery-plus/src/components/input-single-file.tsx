@@ -1,4 +1,4 @@
-import { useEffect, useMemo, type ComponentProps, type ReactNode } from "react"
+import { useMemo, type ComponentProps, type ReactNode } from "react"
 import { tv, type VariantProps } from "tailwind-variants"
 import Icon from "./icon"
 import Text, { textVariants } from "./text"
@@ -42,6 +42,7 @@ interface InputSingleFileProps
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	form: any;
 	allowedExtensions: string[];
+	replaceBy: ReactNode;
 	maxFileSizeInMB: number;
 }
 
@@ -51,6 +52,7 @@ export default function InputSingleFile({
 	form,
 	allowedExtensions,
 	maxFileSizeInMB,
+	replaceBy,
 	...props
 }: InputSingleFileProps) {
 	const formValues = useWatch({ control: form.control });
@@ -79,16 +81,8 @@ export default function InputSingleFile({
 	}
 
 	function isValidFile() {
-		console.log("🚀 => isValidExtension():", isValidExtension())
-		console.log("🚀 => isValidSize():", isValidSize())
 		return isValidExtension() && isValidSize();
 	}
-
-	useEffect(() => {
-		console.log("🚀 => fileExtension:", fileExtension)
-		console.log("🚀 => fileSize:", fileSize)
-
-	}, [fileExtension, fileSize])
 
 	return (
 		<div>
@@ -134,30 +128,33 @@ export default function InputSingleFile({
 					</div>
 				</>
 			) : (
-				<div className="flex gap-3 items-center border border-solid border-border-primary mt-5 p-3 rounded">
-					<Icon svg={FileImageIcon} className="fill-white w-6 h-6" />
-					<div className="flex flex-col">
-						<div className="truncate max-w-80">
-							<Text variant="label-medium" className="text-placeholder">
-								{formFile.name}
-							</Text>
-						</div>
-						<div className="flex">
-							<button
-								type="button"
-								className={textVariants({
-									variant: "label-small",
-									className: "text-accent-red cursor-pointer hover:underline",
-								})}
-								onClick={() => {
-									form.setValue(name, undefined);
-								}}
-							>
-								Remover
-							</button>
+				<>
+					{replaceBy}
+					<div className="flex gap-3 items-center border border-solid border-border-primary mt-5 p-3 rounded">
+						<Icon svg={FileImageIcon} className="fill-white w-6 h-6" />
+						<div className="flex flex-col">
+							<div className="truncate max-w-80">
+								<Text variant="label-medium" className="text-placeholder">
+									{formFile.name}
+								</Text>
+							</div>
+							<div className="flex">
+								<button
+									type="button"
+									className={textVariants({
+										variant: "label-small",
+										className: "text-accent-red cursor-pointer hover:underline",
+									})}
+									onClick={() => {
+										form.setValue(name, undefined);
+									}}
+								>
+									Remover
+								</button>
+							</div>
 						</div>
 					</div>
-				</div>
+				</>
 			)}
 		</div>
 	);

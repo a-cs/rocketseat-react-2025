@@ -18,7 +18,7 @@ export default function PageHome() {
 						id: "123",
 						title: "Olá mundo",
 						imageId: "portrait-tower.png",
-						album: [
+						albums: [
 							{ id: "3421", title: "Album 1" },
 							{ id: "123", title: "Album 2" },
 							{ id: "456", title: "Album 3" },
@@ -28,7 +28,7 @@ export default function PageHome() {
 						id: "1323",
 						title: "Olá mundo",
 						imageId: "portrait-tower.png",
-						album: [
+						albums: [
 							{ id: "3421", title: "Album 1" },
 							{ id: "123", title: "Album 2" },
 							{ id: "456", title: "Album 3" },

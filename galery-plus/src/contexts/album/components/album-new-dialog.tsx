@@ -3,7 +3,6 @@ import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter, DialogHea
 import Button from "../../../components/button"
 import InputText from "../../../components/input-text"
 import Text from "../../../components/text"
-import type { Photo } from "../../photos/models/photo"
 import SelectCheckboxIlustration from "../../../assets/images/select-checkbox.svg?react"
 import Skeleton from "../../../components/skeleton"
 import PhotoImageSelectable from "../../photos/components/photo-image-selectable"

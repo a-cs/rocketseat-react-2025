@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react"
+import { useEffect, useState, useTransition, type ReactNode } from "react"
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTrigger } from "../../../components/dialog"
 import Button from "../../../components/button"
 import InputText from "../../../components/input-text"
@@ -11,6 +11,7 @@ import { useForm } from "react-hook-form"
 import useAlbums from "../../album/hooks/use-albums"
 import { photoNewFormSchema, type PhotoNewFormShecma } from "../schema"
 import { zodResolver } from "@hookform/resolvers/zod"
+import usePhoto from "../hooks/use-photo"
 
 interface PhotoNewDialogProps {
 	trigger: ReactNode
@@ -23,12 +24,14 @@ export default function PhotoNewDialog({ trigger }: PhotoNewDialogProps) {
 		resolver: zodResolver(photoNewFormSchema)
 	})
 	const { albums, isLoadingAlbums } = useAlbums()
+	const { createPhoto } = usePhoto()
+	const [isCreatingPhoto, setIsCreatingPhoto] = useTransition()
 
 	const file = form.watch("file")
 	const fileSource = file?.[0] ? URL.createObjectURL(file[0]) : undefined
 
 	const albumsIds = form.watch("albumsIds")
-	
+
 	useEffect(() => {
 		if (!modalOpen) {
 			form.reset()
@@ -39,7 +42,7 @@ export default function PhotoNewDialog({ trigger }: PhotoNewDialogProps) {
 		const albumsIds = form.getValues("albumsIds") || []
 		const albumsSet = new Set(albumsIds)
 
-		if(albumsSet.has(albumId)){
+		if (albumsSet.has(albumId)) {
 			albumsSet.delete(albumId)
 		} else {
 			albumsSet.add(albumId)
@@ -49,7 +52,10 @@ export default function PhotoNewDialog({ trigger }: PhotoNewDialogProps) {
 	}
 
 	function handleSubmit(payload: PhotoNewFormShecma) {
-		console.log("🚀 => payload:", payload)
+		setIsCreatingPhoto(async () => {
+			await createPhoto(payload)
+			setModalOpen(false)
+		})
 	}
 
 	return (
@@ -110,10 +116,21 @@ export default function PhotoNewDialog({ trigger }: PhotoNewDialogProps) {
 
 					<DialogFooter>
 						<DialogClose asChild>
-							<Button variant="secondary">Cancelar</Button>
+							<Button
+								variant="secondary"
+								disabled={isCreatingPhoto}
+							>
+								Cancelar
+							</Button>
 						</DialogClose>
 
-						<Button type="submit">Adicionar</Button>
+						<Button
+							type="submit"
+							disabled={isCreatingPhoto}
+							handling={isCreatingPhoto}
+						>
+							{isCreatingPhoto ? "Adicionando..." : "Adicionar"}
+						</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>

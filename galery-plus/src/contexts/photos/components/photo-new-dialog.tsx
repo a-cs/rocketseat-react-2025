@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTrigger } from "../../../components/dialog"
 import Button from "../../../components/button"
 import InputText from "../../../components/input-text"
@@ -9,70 +9,98 @@ import Text from "../../../components/text"
 import Skeleton from "../../../components/skeleton"
 import { useForm } from "react-hook-form"
 import useAlbums from "../../album/hooks/use-albums"
+import { photoNewFormSchema, type PhotoNewFormShecma } from "../schema"
+import { zodResolver } from "@hookform/resolvers/zod"
 
 interface PhotoNewDialogProps {
 	trigger: ReactNode
 }
 
 export default function PhotoNewDialog({ trigger }: PhotoNewDialogProps) {
-	const form = useForm()
-	const {albums, isLoadingAlbums} = useAlbums()
+	const [modalOpen, setModalOpen] = useState(false)
 
-	return <Dialog>
-		<DialogTrigger asChild>{trigger}</DialogTrigger>
-		<DialogContent>
-			<DialogHeader>Adicionar foto</DialogHeader>
-			<DialogBody className="flex flex-col gap-5">
-				<InputText
-					placeholder="Adicione um título"
-					maxLength={255}
-				/>
+	const form = useForm<PhotoNewFormShecma>({
+		resolver: zodResolver(photoNewFormSchema)
+	})
+	const { albums, isLoadingAlbums } = useAlbums()
 
-				<Alert>
-					Tamanho máximo: 50MB
-					<br />
-					Você pode selecionar arquivo em PNG, JPG ou JPEG
-				</Alert>
+	const file = form.watch("file")
+	const fileSource = file?.[0] ? URL.createObjectURL(file[0]) : undefined
 
-				<InputSingleFile
-					form={form}
-					allowedExtensions={["png", "jpg", "jpeg"]}
-					maxFileSizeInMB={50}
-					replaceBy={
-						<ImagePreview
-							className="w-full h-56"
+	useEffect(() => {
+		if(!modalOpen){
+			form.reset()
+		}
+	}, [modalOpen, form])
+
+	function handleSubmit(payload: PhotoNewFormShecma) {
+		console.log("🚀 => payload:", payload)
+	}
+
+	return (
+		<Dialog open={modalOpen} onOpenChange={setModalOpen}>
+			<DialogTrigger asChild>{trigger}</DialogTrigger>
+			<DialogContent>
+				<form onSubmit={form.handleSubmit(handleSubmit)}>
+					<DialogHeader>Adicionar foto</DialogHeader>
+					<DialogBody className="flex flex-col gap-5">
+						<InputText
+							placeholder="Adicione um título"
+							maxLength={255}
+							error={form.formState.errors.title?.message}
+							{...form.register("title")}
 						/>
-					}
-				/>
 
-				<div className="space-y-3">
-					<Text variant="label-small">Selecionar álbuns</Text>
-					<div className="flex flex-wrap gap-3">
+						<Alert>
+							Tamanho máximo: 50MB
+							<br />
+							Você pode selecionar arquivo em PNG, JPG ou JPEG
+						</Alert>
 
-						{!isLoadingAlbums && albums.length > 0 && albums.map(album =>
-							<Button
-								key={album.id}
-								variant="ghost"
-								size="sm"
-								className="truncate"
-							>
-								{album.title}
-							</Button>
-						)}
-						{isLoadingAlbums && Array.from({ length: 5 }).map((_, index) =>
-							<Skeleton key={`album-loading-${index}`} className="w-20 h-7" />
-						)}
-					</div>
-				</div>
-			</DialogBody>
+						<InputSingleFile
+							form={form}
+							allowedExtensions={["png", "jpg", "jpeg"]}
+							maxFileSizeInMB={50}
+							replaceBy={
+								<ImagePreview
+									src={fileSource}
+									className="w-full h-56"
+								/>
+							}
+							error={form.formState.errors.file?.message}
+							{...form.register("file")}
+						/>
 
-			<DialogFooter>
-				<DialogClose asChild>
-					<Button variant="secondary">Cancelar</Button>
-				</DialogClose>
+						<div className="space-y-3">
+							<Text variant="label-small">Selecionar álbuns</Text>
+							<div className="flex flex-wrap gap-3">
 
-				<Button>Adicionar</Button>
-			</DialogFooter>
-		</DialogContent>
-	</Dialog>
+								{!isLoadingAlbums && albums.length > 0 && albums.map(album =>
+									<Button
+										key={album.id}
+										variant="ghost"
+										size="sm"
+										className="truncate"
+									>
+										{album.title}
+									</Button>
+								)}
+								{isLoadingAlbums && Array.from({ length: 5 }).map((_, index) =>
+									<Skeleton key={`album-loading-${index}`} className="w-20 h-7" />
+								)}
+							</div>
+						</div>
+					</DialogBody>
+
+					<DialogFooter>
+						<DialogClose asChild>
+							<Button variant="secondary">Cancelar</Button>
+						</DialogClose>
+
+						<Button type="submit">Adicionar</Button>
+					</DialogFooter>
+				</form>
+			</DialogContent>
+		</Dialog>
+	)
 }

@@ -22,18 +22,25 @@ export default function AlbumNewDialog({ trigger }: AlbumNewDialog) {
 	})
 	const { photos, isLoadingPhotos } = usePhotos()
 
-	useEffect(()=>{
-		if(!modalOpen){
+	useEffect(() => {
+		if (!modalOpen) {
 			form.reset()
 		}
-	},[modalOpen, form])
+	}, [modalOpen, form])
 
 	function handleTogglePhoto(selected: boolean, photoId: string) {
-		console.log(selected, photoId)
+		const photosIds = form.getValues("photosIds") || []
+		let newValue = []
+		if (selected) {
+			newValue= [...photosIds, photoId]
+		} else {
+			 newValue= photosIds.filter((id) => id !== photoId)
+		}
+		form.setValue("photosIds", newValue)
 	}
 
-	function handleSubmit(payload: AlbumNewFormShecma){
-	    console.log("🚀 => payload:", payload)
+	function handleSubmit(payload: AlbumNewFormShecma) {
+		console.log("🚀 => payload:", payload)
 	}
 
 	return <Dialog open={modalOpen} onOpenChange={setModalOpen}>
@@ -44,9 +51,9 @@ export default function AlbumNewDialog({ trigger }: AlbumNewDialog) {
 
 				<DialogBody className="flex flex-col gap-5">
 					<InputText
-					placeholder="Adicione um título"
-					error={form.formState.errors.title?.message}
-					{...form.register("title")}
+						placeholder="Adicione um título"
+						error={form.formState.errors.title?.message}
+						{...form.register("title")}
 					/>
 
 					<div className="space-y-3">

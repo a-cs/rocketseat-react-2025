@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react"
+import { useEffect, useState, useTransition, type ReactNode } from "react"
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTrigger } from "../../../components/dialog"
 import Button from "../../../components/button"
 import InputText from "../../../components/input-text"
@@ -8,8 +8,9 @@ import Skeleton from "../../../components/skeleton"
 import PhotoImageSelectable from "../../photos/components/photo-image-selectable"
 import usePhotos from "../../photos/hooks/use-photos"
 import { useForm } from "react-hook-form"
-import { albumNewFormSchema, type AlbumNewFormShecma } from "../schema"
+import { albumNewFormSchema, type AlbumNewFormSchema } from "../schema"
 import { zodResolver } from "@hookform/resolvers/zod"
+import useAlbum from "../hooks/use-album"
 
 interface AlbumNewDialog {
 	trigger: ReactNode
@@ -17,10 +18,12 @@ interface AlbumNewDialog {
 
 export default function AlbumNewDialog({ trigger }: AlbumNewDialog) {
 	const [modalOpen, setModalOpen] = useState(false)
-	const form = useForm<AlbumNewFormShecma>({
+	const form = useForm<AlbumNewFormSchema>({
 		resolver: zodResolver(albumNewFormSchema)
 	})
 	const { photos, isLoadingPhotos } = usePhotos()
+	const { createAlbum } = useAlbum()
+	const [isCreatingAlbum, setIsCreatingAlbum] = useTransition()
 
 	useEffect(() => {
 		if (!modalOpen) {
@@ -32,15 +35,18 @@ export default function AlbumNewDialog({ trigger }: AlbumNewDialog) {
 		const photosIds = form.getValues("photosIds") || []
 		let newValue = []
 		if (selected) {
-			newValue= [...photosIds, photoId]
+			newValue = [...photosIds, photoId]
 		} else {
-			 newValue= photosIds.filter((id) => id !== photoId)
+			newValue = photosIds.filter((id) => id !== photoId)
 		}
 		form.setValue("photosIds", newValue)
 	}
 
-	function handleSubmit(payload: AlbumNewFormShecma) {
-		console.log("🚀 => payload:", payload)
+	function handleSubmit(payload: AlbumNewFormSchema) {
+		setIsCreatingAlbum(async () => {
+			await createAlbum(payload)
+			setModalOpen(false)
+		})
 	}
 
 	return <Dialog open={modalOpen} onOpenChange={setModalOpen}>
@@ -98,10 +104,21 @@ export default function AlbumNewDialog({ trigger }: AlbumNewDialog) {
 
 				<DialogFooter>
 					<DialogClose asChild>
-						<Button variant="secondary">Cancelar</Button>
+						<Button
+							variant="secondary"
+							disabled={isCreatingAlbum}
+						>
+							Cancelar
+						</Button>
 					</DialogClose>
 
-					<Button type="submit">Adicionar</Button>
+					<Button
+						type="submit"
+						disabled={isCreatingAlbum}
+						handling={isCreatingAlbum}
+					>
+						{isCreatingAlbum ? "Criando..." : "Criar"}
+					</Button>
 				</DialogFooter>
 			</form>
 		</DialogContent>

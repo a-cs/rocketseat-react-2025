@@ -5,4 +5,4 @@ export const albumNewFormSchema = z.object({
 	photosIds: z.array(z.string().uuid()).optional()
 })
 
-export type AlbumNewFormShecma = z.infer<typeof albumNewFormSchema>
+export type AlbumNewFormSchema = z.infer<typeof albumNewFormSchema>
